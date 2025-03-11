@@ -21,11 +21,9 @@ import java.io.IOException;
 @Slf4j
 @RestController
 public class CheckoutServiceImpl implements CheckoutService {
-    private final ObjectMapper objectMapper;
     private final PaypalServerSdkClient client;
 
     public CheckoutServiceImpl(ObjectMapper objectMapper, PaypalServerSdkClient client) {
-        this.objectMapper = objectMapper;
         this.client = client;
     }
 
