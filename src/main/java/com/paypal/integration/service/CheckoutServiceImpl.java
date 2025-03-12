@@ -1,6 +1,5 @@
 package com.paypal.integration.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.integration.api.CheckoutService;
 import com.paypal.integration.common.IdUtils;
 import com.paypal.integration.vo.OrderVO;
@@ -10,6 +9,7 @@ import com.paypal.sdk.exceptions.ApiException;
 import com.paypal.sdk.http.response.ApiResponse;
 import com.paypal.sdk.models.Order;
 import com.paypal.sdk.models.OrderRequest;
+import com.paypal.sdk.models.OrdersCaptureInput;
 import com.paypal.sdk.models.OrdersCreateInput;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,11 @@ import java.io.IOException;
 public class CheckoutServiceImpl implements CheckoutService {
     private final PaypalServerSdkClient client;
 
-    public CheckoutServiceImpl(ObjectMapper objectMapper, PaypalServerSdkClient client) {
+    public CheckoutServiceImpl() {
+        this.client = null;
+    }
+
+    public CheckoutServiceImpl(PaypalServerSdkClient client) {
         this.client = client;
     }
 
@@ -33,14 +37,30 @@ public class CheckoutServiceImpl implements CheckoutService {
             Order response = this.createOrderVO(orderVO);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            log.info(e.getMessage());
+            System.out.println(e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
     public ResponseEntity<Order> captureOrder(String orderID) {
-        return null;
+        try {
+            Order response = this.captureOrders(orderID);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private Order captureOrders(String orderID) throws IOException, ApiException {
+        OrdersCaptureInput ordersCaptureInput = new OrdersCaptureInput.Builder(
+                orderID,
+                null)
+                .build();
+        OrdersController ordersController = client.getOrdersController();
+        ApiResponse<Order> apiResponse = ordersController.ordersCapture(ordersCaptureInput);
+        return apiResponse.getResult();
     }
 
     private Order createOrderVO(OrderVO orderVO) throws IOException, ApiException {
