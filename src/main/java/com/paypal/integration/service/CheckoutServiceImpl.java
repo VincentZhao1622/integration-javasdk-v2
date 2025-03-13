@@ -23,10 +23,6 @@ import java.io.IOException;
 public class CheckoutServiceImpl implements CheckoutService {
     private final PaypalServerSdkClient client;
 
-    public CheckoutServiceImpl() {
-        this.client = null;
-    }
-
     public CheckoutServiceImpl(PaypalServerSdkClient client) {
         this.client = client;
     }
