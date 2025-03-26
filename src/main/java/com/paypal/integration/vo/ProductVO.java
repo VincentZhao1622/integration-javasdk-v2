@@ -13,7 +13,6 @@ public class ProductVO {
     private String imageUrl;
 
     @JsonGetter("productSkuId")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getProductSkuId() {
         return productSkuId;
     }
