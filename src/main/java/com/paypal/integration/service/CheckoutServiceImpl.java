@@ -1,5 +1,7 @@
 package com.paypal.integration.service;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.paypal.integration.api.CheckoutService;
 import com.paypal.integration.common.IdUtils;
 import com.paypal.integration.vo.OrderVO;
@@ -22,6 +24,7 @@ import java.io.IOException;
 @RestController
 public class CheckoutServiceImpl implements CheckoutService {
     private final PaypalServerSdkClient client;
+    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public CheckoutServiceImpl(PaypalServerSdkClient client) {
         this.client = client;
@@ -30,7 +33,9 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Override
     public ResponseEntity<Order> createOrder(OrderVO orderVO) {
         try {
+            log.info("CreateOrder request: {}", gson.toJson(orderVO));
             Order response = this.createOrderVO(orderVO);
+            log.info("CreateOrder response: {}", gson.toJson(response));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -41,7 +46,9 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Override
     public ResponseEntity<Order> captureOrder(String orderID) {
         try {
+            log.info("CaptureOrder requestOrderId: {}", orderID);
             Order response = this.captureOrders(orderID);
+            log.info("CaptureOrder response: {}", gson.toJson(response));
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
