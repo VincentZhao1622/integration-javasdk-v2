@@ -15,4 +15,7 @@ public interface CheckoutService {
 
     @PostMapping("/api/orders/{orderID}/capture")
     public ResponseEntity<Order> captureOrder(@PathVariable("orderID") String orderID);
+
+    @PostMapping("/api/orders/createAsync")
+    public ResponseEntity<Order> createOrderAsync(@RequestBody OrderVO orderVO);
 }

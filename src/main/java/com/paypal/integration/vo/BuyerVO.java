@@ -3,6 +3,7 @@ package com.paypal.integration.vo;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.paypal.integration.common.PaymentMethod;
 
 public class BuyerVO {
     private String firstName;
@@ -10,16 +11,11 @@ public class BuyerVO {
     private String email;
     private String phoneNumber;
     private AddressVO shippingAddress;
+    private PaymentMethod paymentMethod;
+    private Boolean saveCardChecked;
+    private String cardVaultId;
 
     public BuyerVO() {
-    }
-
-    public BuyerVO(String firstName, String lastName, String email, String phoneNumber, AddressVO shippingAddress) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
-        this.shippingAddress = shippingAddress;
     }
 
     @JsonGetter("firstName")
@@ -77,6 +73,36 @@ public class BuyerVO {
         this.shippingAddress = shippingAddress;
     }
 
+    @JsonGetter("paymentMethod")
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @JsonSetter("paymentMethod")
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    @JsonGetter("saveCardChecked")
+    public Boolean isSaveCardChecked() {
+        return saveCardChecked;
+    }
+
+    @JsonSetter("saveCardChecked")
+    public void setSaveCardChecked(Boolean saveCardChecked) {
+        this.saveCardChecked = saveCardChecked;
+    }
+
+    @JsonGetter("cardVaultId")
+    public String getCardVaultId() {
+        return cardVaultId;
+    }
+
+    @JsonSetter("cardVaultId")
+    public void setCardVaultId(String cardVaultId) {
+        this.cardVaultId = cardVaultId;
+    }
+
     @Override
     public String toString() {
         return "BuyerVO{" +
@@ -85,6 +111,9 @@ public class BuyerVO {
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", shippingAddress=" + shippingAddress +
+                ", paymentMethod=" + paymentMethod +
+                ", saveCardChecked=" + saveCardChecked +
+                ", cardVaultId='" + cardVaultId + '\'' +
                 '}';
     }
 }
