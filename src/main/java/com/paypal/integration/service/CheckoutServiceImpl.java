@@ -94,6 +94,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         createOrderInput.setBody(this.createOrderRequest(orderVO));
 
         OrdersController ordersController = client.getOrdersController();
+        log.info("CreateOrderInput: {}", gson.toJson(createOrderInput));
         ApiResponse<Order> apiResponse = ordersController.createOrder(createOrderInput);
         return apiResponse.getResult();
     }
@@ -170,6 +171,9 @@ public class CheckoutServiceImpl implements CheckoutService {
         shipping.setAddress(address);
         purchaseUnit.setShipping(shipping);
 
+        purchaseUnit.setInvoiceId("InvoiceId_" + IdUtils.id32());
+        orderRequest.setPurchaseUnits(Collections.singletonList(purchaseUnit));
+
         // 设置PaymentSource
         PaymentSource paymentSource = new PaymentSource();
         // saveCardChecked means pay by card, otherwise pay by PayPal
@@ -196,11 +200,6 @@ public class CheckoutServiceImpl implements CheckoutService {
         }
         orderRequest.setPaymentSource(paymentSource);
 
-        // 设置其他可选字段
-        purchaseUnit.setDescription("Order from " + buyer.getFirstName() + " " + buyer.getLastName());
-        purchaseUnit.setCustomId(buyer.getEmail());
-
-        orderRequest.setPurchaseUnits(Collections.singletonList(purchaseUnit));
 
         return orderRequest;
     }
