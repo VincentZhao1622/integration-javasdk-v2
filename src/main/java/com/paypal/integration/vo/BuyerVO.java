@@ -13,7 +13,7 @@ public class BuyerVO {
     private AddressVO shippingAddress;
     private PaymentMethod paymentMethod;
     private Boolean saveCardChecked;
-    private String cardVaultId;
+    private VaultVO vaultInfo;
 
     public BuyerVO() {
     }
@@ -93,14 +93,12 @@ public class BuyerVO {
         this.saveCardChecked = saveCardChecked;
     }
 
-    @JsonGetter("cardVaultId")
-    public String getCardVaultId() {
-        return cardVaultId;
+    public VaultVO getVaultInfo() {
+        return vaultInfo;
     }
 
-    @JsonSetter("cardVaultId")
-    public void setCardVaultId(String cardVaultId) {
-        this.cardVaultId = cardVaultId;
+    public void setVaultInfo(VaultVO vaultInfo) {
+        this.vaultInfo = vaultInfo;
     }
 
     @Override
@@ -113,7 +111,7 @@ public class BuyerVO {
                 ", shippingAddress=" + shippingAddress +
                 ", paymentMethod=" + paymentMethod +
                 ", saveCardChecked=" + saveCardChecked +
-                ", cardVaultId='" + cardVaultId + '\'' +
+                ", vaultInfo=" + vaultInfo +
                 '}';
     }
 }

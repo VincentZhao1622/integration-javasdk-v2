@@ -17,6 +17,7 @@ import com.paypal.sdk.models.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -92,7 +93,6 @@ public class CheckoutServiceImpl implements CheckoutService {
         // Request ID is preferred to be unique for debugging
         createOrderInput.setPaypalRequestId("REQ-ID-" + IdUtils.id32());
         createOrderInput.setBody(this.createOrderRequest(orderVO));
-
         OrdersController ordersController = client.getOrdersController();
         log.info("CreateOrderInput: {}", gson.toJson(createOrderInput));
         ApiResponse<Order> apiResponse = ordersController.createOrder(createOrderInput);
@@ -179,27 +179,54 @@ public class CheckoutServiceImpl implements CheckoutService {
         // saveCardChecked means pay by card, otherwise pay by PayPal
         if (PaymentMethod.CARD.equals(buyer.getPaymentMethod())) {
             // set an empty object, js sdk will set it automatically
-            paymentSource.setCard(new CardRequest());
+            CardRequest cardRequest = new CardRequest();
+            paymentSource.setCard(cardRequest);
             if (buyer.isSaveCardChecked()) {
-                // set attributes
-                CardRequest cardRequest = new CardRequest();
-                CardAttributes attributes = new CardAttributes();
-                VaultInstructionBase vaultInstructionBase = new VaultInstructionBase();
-                vaultInstructionBase.setStoreInVault(StoreInVaultInstruction.ON_SUCCESS);
-                attributes.setVault(vaultInstructionBase);
-                cardRequest.setAttributes(attributes);
+                // SCA payment indicator
+                CardStoredCredential cardStoredCredential = new CardStoredCredential();
+                cardRequest.setStoredCredential(cardStoredCredential);
+                if (buyer.getVaultInfo() != null && StringUtils.hasLength(buyer.getVaultInfo().getVaultId())) {
+                    // returned user with vaultId saved
+                    cardRequest.setVaultId(buyer.getVaultInfo().getVaultId());
+                    // set SCA properties
+                    cardStoredCredential.setPaymentInitiator(PaymentInitiator.MERCHANT);
+                    cardStoredCredential.setPaymentType(StoredPaymentSourcePaymentType.RECURRING);
+                    cardStoredCredential.setUsage(StoredPaymentSourceUsageType.SUBSEQUENT);
+                } else {
+                    // vault id not exist, regard as first user, set attributes
+                    CardAttributes attributes = new CardAttributes();
+                    VaultInstructionBase vaultInstructionBase = new VaultInstructionBase();
+                    vaultInstructionBase.setStoreInVault(StoreInVaultInstruction.ON_SUCCESS);
+                    attributes.setVault(vaultInstructionBase);
+                    cardRequest.setAttributes(attributes);
+                    // set SCA properties
+                    cardStoredCredential.setPaymentInitiator(PaymentInitiator.MERCHANT);
+                    cardStoredCredential.setPaymentType(StoredPaymentSourcePaymentType.RECURRING);
+                    cardStoredCredential.setUsage(StoredPaymentSourceUsageType.FIRST);
+                }
                 paymentSource.setCard(cardRequest);
             }
+        } else if (PaymentMethod.GOOGLE_PAY.equals(buyer.getPaymentMethod())) {
+            GooglePayRequest googlePay = new GooglePayRequest();
+            paymentSource.setGooglePay(googlePay);
         } else {
             PaypalWallet paypal = new PaypalWallet();
             PaypalWalletExperienceContext experienceContext = new PaypalWalletExperienceContext();
             experienceContext.setReturnUrl("https://example.com/return");
             experienceContext.setCancelUrl("https://example.com/cancel");
             paypal.setExperienceContext(experienceContext);
+            if (buyer.isSaveCardChecked()) {
+                PaypalWalletAttributes attributes = new PaypalWalletAttributes();
+                PaypalWalletVaultInstruction vaultInstruction = new PaypalWalletVaultInstruction();
+                vaultInstruction.setStoreInVault(StoreInVaultInstruction.ON_SUCCESS);
+                vaultInstruction.setUsageType(PaypalPaymentTokenUsageType.MERCHANT);
+                vaultInstruction.setCustomerType(PaypalPaymentTokenCustomerType.CONSUMER);
+                attributes.setVault(vaultInstruction);
+                paypal.setAttributes(attributes);
+            }
             paymentSource.setPaypal(paypal);
         }
         orderRequest.setPaymentSource(paymentSource);
-
 
         return orderRequest;
     }
